@@ -86,26 +86,42 @@ static napi_value CheckBlock(napi_env env, napi_callback_info info)
 
     if (sblock_len - 1 > UINT8_MAX)
     {
-        napi_throw_type_error(env, NULL, "s-block length is more, than 255 bit");
+        napi_throw_type_error(env, NULL, "S-block length is more, than 255 bit");
         return NULL;
     }
 
+    // calculate statistics of block
     struct s_block_stats *stats = SBlockCalculations(sblock_len, sblock);
+
+    napi_value output_matrix;
+    status = napi_create_array_with_length(env, sblock_len, &output_matrix);
+    assert(status == napi_ok);
+    // translite result to output matrix
     for (uint16_t i = 0; i < stats->sblock_len; ++i)
     {
+        napi_value array;
+        status = napi_create_array_with_length(env, stats->sblock_len, &array);
+        assert(status == napi_ok);
         for (uint16_t j = 0; j < stats->sblock_len; ++j)
         {
-            printf("%u ", stats->probability_matrix[i][j]);
+            napi_value number;
+            status = napi_create_uint32(env, stats->probability_matrix[i][j], &number);
+            assert(status == napi_ok);
+            status = napi_set_element(env, array, j, number);
+            assert(status == napi_ok);
         }
-        printf("\n");
+        status = napi_set_element(env, output_matrix, i, array);
+        assert(status == napi_ok);
     }
+    // free up memory
     for (uint16_t i = 0; i < stats->sblock_len; ++i)
     {
         free(stats->probability_matrix[i]);
     }
     free(stats->probability_matrix);
     free(stats);
-    return args[1];
+    // result
+    return output_matrix;
 }
 
 #define DECLARE_NAPI_METHOD(name, func)         \
