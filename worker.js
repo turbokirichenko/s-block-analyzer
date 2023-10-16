@@ -1,3 +1,5 @@
+const { workerData, parentPort } = require('worker_threads');
 const addon = require('./build/Release/addon');
-const array = new Uint8Array([1, 7, 4, 2, 3, 5, 6, 0]);
-console.log('log: ', JSON.stringify(addon.add(array)));
+
+const byteArray = workerData;
+parentPort.postMessage(addon.add(new Uint8Array(byteArray)));
