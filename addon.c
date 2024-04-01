@@ -73,7 +73,7 @@ static napi_value CheckBlock(napi_env env, napi_callback_info info)
 
     if (!isArgArray)
     {
-        napi_throw_type_error(env, NULL, "Wrong type of the second parameter");
+        napi_throw_type_error(env, NULL, "Wrong type of the parameter");
         return NULL;
     }
 
